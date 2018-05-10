@@ -12,7 +12,11 @@ var app = express();
 // Obtener todos los usuarios
 // ============================================
 app.get("/", (req, res, next) => {
+    var desde = req.query.desde || 0;
+    desde = Number(desde);
     Usuario.find({}, 'nombre email img role')
+        .skip(desde)
+        .limit(5)
         .exec(
             (err, usuarios) => {
                 if (err) {
@@ -22,16 +26,19 @@ app.get("/", (req, res, next) => {
                         errors: err
                     });
                 }
-                res.status(200).json({
-                    ok: true,
-                    usuarios: usuarios
+                Usuario.count({}, (err, conteo) => {
+                    res.status(200).json({
+                        ok: true,
+                        usuarios: usuarios,
+                        total: conteo
+                    });
                 });
             });
 });
 
 
 // ============================================
-// Actualizar usuarios
+// Actualizar usuario
 // ============================================
 app.put('/:id', mdAutenticacion.verificaToken, (req, res) => {
     var id = req.params.id;
@@ -72,7 +79,7 @@ app.put('/:id', mdAutenticacion.verificaToken, (req, res) => {
 });
 
 // ============================================
-// Crear un nuevo usuarios
+// Crear un nuevo usuario
 // ============================================
 app.post('/', mdAutenticacion.verificaToken, (req, res) => {
     var body = req.body;
@@ -103,7 +110,7 @@ app.post('/', mdAutenticacion.verificaToken, (req, res) => {
 });
 
 // ============================================
-// Eliminar usuarios por el id
+// Eliminar usuario por el id
 // ============================================
 app.delete('/:id', mdAutenticacion.verificaToken, (req, res) => {
     var id = req.params.id;
